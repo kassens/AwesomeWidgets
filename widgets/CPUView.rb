@@ -11,11 +11,15 @@ class CPUView < NSView
     data = @data
     Thread.new do
       loop do
-        m = `sar 1`.match /^\d\d:\d\d:\d\d +(\d+) +(\d+) +(\d+) +\d+$/
-        usr, nice, sys = m[1].to_i, m[2].to_i, m[3].to_i
-        data << (usr + nice + sys) / 100.0
-        data.shift if data.length > DATA_POINTS
-        self.needsDisplay = true
+        begin
+          m = `sar 1`.match /^\d\d:\d\d:\d\d +(\d+) +(\d+) +(\d+) +\d+$/
+          usr, nice, sys = m[1].to_i, m[2].to_i, m[3].to_i
+          data << (usr + nice + sys) / 100.0
+          data.shift if data.length > DATA_POINTS
+          self.needsDisplay = true
+        rescue Exception => e
+          puts 'error'
+        end
       end
     end
     self

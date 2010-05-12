@@ -15,27 +15,40 @@ class MainView < NSView
   end
 end
 
-frame = [80, 80, 450, 250]
+class Application
+  # screenFrame = NSScreen.mainScreen.frame
+  # origin = NSPoint.new(80, screenFrame.origin.y + screenFrame.size.height - 300) # "top left"-ish
+  FRAME = [80, 80, 450, 250]
 
-# screenFrame = NSScreen.mainScreen.frame
-# origin = NSPoint.new(80, screenFrame.origin.y + screenFrame.size.height - 300) # "top left"-ish
+  def initialize
+    create_window
+    
+    @mainView = MainView.alloc.initWithFrame(FRAME)
+    @window.contentView = @mainView
+    
+    load_plugin('CPUView', [0, 0, 300, 100])
+    load_plugin('CalendarView', [0, 110, 300, 100])
+    
+    @window.makeKeyAndOrderFront(nil) # Show the window
+  end
+  
+  def create_window
+    @window = NSWindow.alloc.initWithContentRect(FRAME,
+        styleMask:NSBorderlessWindowMask,
+        backing:NSBackingStoreBuffered,
+        defer:false)
+    @window.level = CGWindowLevelForKey(KCGDesktopIconWindowLevelKey)
+    @window.opaque = false
+  end
+  
+  def load_plugin(name, frame)
+    require File.join(BASE_PATH, 'widgets', name + '.rb')
+    view = Kernel.const_get(name).alloc.initWithFrame(frame)
+    @mainView.addSubview(view)
+  end
+  
+end
 
-window = NSWindow.alloc.initWithContentRect(frame, styleMask:NSBorderlessWindowMask, backing:NSBackingStoreBuffered, defer:false)
-
-window.level = CGWindowLevelForKey(KCGDesktopIconWindowLevelKey)
-window.opaque = false
-
-mainView = MainView.alloc.initWithFrame(frame)
-window.contentView = mainView
-
-require File.join(BASE_PATH, 'CPUView.rb')
-cpuView = CPUView.alloc.initWithFrame([0, 0, 300, 100])
-mainView.addSubview(cpuView)
-
-require File.join(BASE_PATH, 'CalendarView.rb')
-calendarView = CalendarView.alloc.initWithFrame([0, 110, 300, 100])
-mainView.addSubview(calendarView)
-
-window.makeKeyAndOrderFront(nil) # Show the window
+Application.new
 
 NSApp.run

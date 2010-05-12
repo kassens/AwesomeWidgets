@@ -7,29 +7,23 @@ class NotificationListener
     @registered_listeners ||= []
   end
   
-  def initialize(&block)
-    @callback = block
+  def initialize
     NotificationListener.registered_listeners << self
     NSNotificationCenter.defaultCenter.addObserver self,
       selector:'receive:',
       name:NSApplicationDidChangeScreenParametersNotification,
-      object:$app
+      object:NSApp
   end
   
   def receive(notification)
-    @callback.call(notification)
+    p notification.description
   end
   
 end
 
-application = NSApplication.sharedApplication
-$app = application
+NotificationListener.new
 
-NotificationListener.new do |note|
-   p note.description
-end
-
-application.run
+NSApp.run
 
 # # resolution change with external
 # NSConcreteNotification {name = O3DeviceChanged; object = o3dv*04272300}
