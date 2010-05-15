@@ -23,19 +23,23 @@ class CalendarView < NSView
     shadow.shadowBlurRadius = 3.0
     shadow.shadowColor = NSColor.blackColor.colorWithAlphaComponent(0.3)
     shadow.set
-
-    str = upcoming_events.map { |e| "#{time_until(e)} until #{e.title}" }.join("\n")
-    str.drawAtPoint(NSPoint.new(10, 10), withAttributes:{
+    
+    now = NSDate.date.timeIntervalSinceReferenceDate
+    str = upcoming_events.map { |e|
+      start = e.startDate.timeIntervalSinceReferenceDate
+      if start > now
+        "#{seconds_to_words(start - now)} until #{e.title}"
+      else
+        "#{seconds_to_words(now - start)} since #{e.title}"
+      end
+    }.join("\n")
+    str.drawAtPoint([10, 10], withAttributes:{
       NSForegroundColorAttributeName => NSColor.whiteColor,
       NSFontAttributeName => NSFont.fontWithName("Futura", size: 12)
     })
   end
   
-  def time_until(event)
-    a = NSDate.date.timeIntervalSinceReferenceDate
-    b = event.startDate.timeIntervalSinceReferenceDate
-    
-    distance_in_secs = b - a
+  def seconds_to_words(distance_in_secs)
     distance_in_mins = distance_in_secs / 60
     distance_in_hrs = distance_in_mins / 60
     

@@ -18,7 +18,7 @@ end
 class Application
   # screenFrame = NSScreen.mainScreen.frame
   # origin = NSPoint.new(80, screenFrame.origin.y + screenFrame.size.height - 300) # "top left"-ish
-  FRAME = [80, 80, 450, 250]
+  FRAME = [80, 80, 450, 450]
 
   def initialize
     create_window
@@ -28,8 +28,10 @@ class Application
     
     load_plugin('CPUView', [0, 0, 300, 100])
     load_plugin('CalendarView', [0, 110, 300, 100])
+    # load_plugin('TwitterView', [0, 220, 400, 100])
     
     @window.makeKeyAndOrderFront(nil) # Show the window
+    listen_to_screen_change
   end
   
   def create_window
@@ -47,8 +49,22 @@ class Application
     @mainView.addSubview(view)
   end
   
+  def listen_to_screen_change
+    NSNotificationCenter.defaultCenter.addObserver self,
+      selector:'did_change_screen_parameters:',
+      name:NSApplicationDidChangeScreenParametersNotification,
+      object:NSApp
+  end
+  
+  def did_change_screen_parameters(notification)
+    @window.frameOrigin = [80,80]
+  end
+  
+  def run
+    NSApp.run
+  end
+  
 end
 
-Application.new
+Application.new.run
 
-NSApp.run

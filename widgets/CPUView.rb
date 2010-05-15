@@ -8,17 +8,20 @@ class CPUView < NSView
   def initWithFrame(frame)
     super
     @data = []
-    data = @data
     Thread.new do
       loop do
         begin
-          m = `sar 1`.match /^\d\d:\d\d:\d\d +(\d+) +(\d+) +(\d+) +\d+$/
+          out = `sar 1`
+          m = out.match /^\d\d:\d\d:\d\d +(\d+) +(\d+) +(\d+) +\d+$/
           usr, nice, sys = m[1].to_i, m[2].to_i, m[3].to_i
-          data << (usr + nice + sys) / 100.0
-          data.shift if data.length > DATA_POINTS
+          @data << (usr + nice + sys) / 100.0
+          @data.shift if @data.length > DATA_POINTS
           self.needsDisplay = true
         rescue Exception => e
-          puts 'error'
+          puts 'Error:'
+          puts "data: #{@data.inspect}"
+          puts "error: #{e.inspect}"
+          puts "out: #{out.inspect}"
         end
       end
     end
@@ -33,13 +36,13 @@ class CPUView < NSView
 
     NSColor.whiteColor.colorWithAlphaComponent(0.2).set
     path = NSBezierPath.bezierPath
-    path.moveToPoint NSMakePoint(PADDING + 0.5, PADDING + HEIGHT + 0.5)
-    path.lineToPoint NSMakePoint(PADDING + 0.5, PADDING + 0.5)
-    path.lineToPoint NSMakePoint(PADDING + WIDTH + 0.5, PADDING + 0.5)
+    path.moveToPoint [PADDING + 0.5, PADDING + HEIGHT + 0.5]
+    path.lineToPoint [PADDING + 0.5, PADDING + 0.5]
+    path.lineToPoint [PADDING + WIDTH + 0.5, PADDING + 0.5]
     path.stroke
     
     shadow = NSShadow.alloc.init
-    shadow.shadowOffset = NSMakeSize(5.0, -5.0)
+    shadow.shadowOffset = [5.0, -5.0]
     shadow.shadowBlurRadius = 3.0
     shadow.shadowColor = NSColor.blackColor.colorWithAlphaComponent(0.2)
     shadow.set
@@ -50,7 +53,7 @@ class CPUView < NSView
     path = NSBezierPath.bezierPath
     path.lineJoinStyle = NSRoundLineJoinStyle
     path.lineCapStyle = NSRoundLineCapStyle
-    path.lineWidth = 3
+    path.lineWidth = 1.5
     
     value = @data.first
     path.moveToPoint NSMakePoint(PADDING, value * HEIGHT + PADDING)
