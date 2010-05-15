@@ -1,31 +1,11 @@
 framework 'calendarstore'
 
-class CalendarView < NSView
-  def initWithFrame(frame)
-    super
-    Thread.new do
-      loop do
-        self.needsDisplay = true
-        sleep 60
-      end
-    end
-    self
-  end
+class CalendarView < WidgetView
+  UPDATE_INTERVAL = 60
   
-  def drawRect(rect)
-    if DEBUG
-      NSColor.blackColor.colorWithAlphaComponent(0.2).set
-      NSRectFill(bounds)
-    end
-    
-    shadow = NSShadow.alloc.init
-    shadow.shadowOffset = NSMakeSize(5.0, -5.0)
-    shadow.shadowBlurRadius = 3.0
-    shadow.shadowColor = NSColor.blackColor.colorWithAlphaComponent(0.3)
-    shadow.set
-    
+  def update
     now = NSDate.date.timeIntervalSinceReferenceDate
-    str = upcoming_events.map { |e|
+    @data = upcoming_events.map { |e|
       start = e.startDate.timeIntervalSinceReferenceDate
       if start > now
         "#{seconds_to_words(start - now)} until #{e.title}"
@@ -33,10 +13,13 @@ class CalendarView < NSView
         "#{seconds_to_words(now - start)} since #{e.title}"
       end
     }.join("\n")
-    str.drawAtPoint([10, 10], withAttributes:{
-      NSForegroundColorAttributeName => NSColor.whiteColor,
-      NSFontAttributeName => NSFont.fontWithName("Futura", size: 12)
-    })
+  end
+  
+  def drawRect(rect)
+    super
+    return unless @data
+    set_shadow
+    @data.drawAtPoint([10, 10], withAttributes:normalFontAttributes)
   end
   
   def seconds_to_words(distance_in_secs)

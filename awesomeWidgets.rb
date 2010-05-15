@@ -1,6 +1,9 @@
 #!/usr/bin/env macruby
 framework 'appkit'
+
 BASE_PATH = File.dirname(__FILE__)
+
+require File.join(BASE_PATH, 'WidgetView.rb')
 
 DEBUG = false
 
@@ -28,6 +31,7 @@ class Application
     
     load_plugin('CPUView', [0, 0, 300, 100])
     load_plugin('CalendarView', [0, 110, 300, 100])
+    load_plugin('TrafficView', [0, 220, 400, 40])
     # load_plugin('TwitterView', [0, 220, 400, 100])
     
     @window.makeKeyAndOrderFront(nil) # Show the window
@@ -67,4 +71,3 @@ class Application
 end
 
 Application.new.run
-
